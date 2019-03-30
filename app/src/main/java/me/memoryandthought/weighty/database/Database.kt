@@ -3,6 +3,11 @@ package me.memoryandthought.weighty.database
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import me.memoryandthought.weighty.BuildConfig
+import me.memoryandthought.weighty.database.ExerciseSetDTO
 import java.time.Instant
 import java.util.*
 
@@ -19,6 +24,22 @@ interface ExerciseDao {
     @Update
     fun updateExercise(exercise: ExerciseDTO)
 
+    @Insert
+    fun insertAll(exercises: List<ExerciseDTO>)
+
+
+}
+
+@Dao
+interface WorkoutDao {
+    @Query("SELECT * from ExerciseSetDTO where exerciseId = :exerciseId")
+    fun exerciseSetsForExercise(exerciseId: UUID): LiveData<Array<ExerciseSetDTO>>
+}
+
+@Dao
+interface SetDao {
+    @Insert
+    fun insertAll(sets: List<SetDTO>)
 }
 
 class Converters {
@@ -37,12 +58,20 @@ class Converters {
 
     @TypeConverter
     fun toUuid(value: String?): UUID? = value?.let { UUID.fromString(it)}
+
 }
 
-@Database(entities=arrayOf(ExerciseDTO::class), exportSchema = false, version = 1)
+@Database(
+    entities=arrayOf(ExerciseDTO::class, SetDTO::class),
+    views=arrayOf(ExerciseSetDTO::class),
+    exportSchema = false,
+    version = 1
+)
 @TypeConverters(Converters::class)
 abstract class WeightyDatabase : RoomDatabase() {
     abstract fun exerciseDao(): ExerciseDao
+    abstract fun workoutDao(): WorkoutDao
+    abstract fun setDao(): SetDao
 
     companion object {
         @Volatile private var instance: WeightyDatabase? = null
@@ -54,7 +83,17 @@ abstract class WeightyDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context): WeightyDatabase {
-            return Room.databaseBuilder(context, WeightyDatabase::class.java, DATABASE_NAME).build()
+            val builder = Room.databaseBuilder(context, WeightyDatabase::class.java, DATABASE_NAME)
+            if (BuildConfig.PREPOPULATE_DATABASE) {
+                builder.addCallback(object: RoomDatabase.Callback() {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        super.onCreate(db)
+                        val request = OneTimeWorkRequestBuilder<SeedDatabaseWorker>().build()
+                        WorkManager.getInstance().enqueue(request)
+                    }
+                })
+            }
+            return builder.build()
         }
     }
 }

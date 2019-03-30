@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/nav_graph">
+            android:id="@+id/nav_graph"
+            app:startDestination="@id/exerciseListFragment">
 
+    <fragment
+            android:id="@+id/exerciseListFragment"
+            android:name="me.memoryandthought.weighty.fragments.ExerciseListFragment"
+            android:label="ExerciseListFragment">
+        <action
+                android:id="@+id/action_exerciseListFragment_view_exercise_history"
+                app:destination="@id/exerciseHistoryFragment"/>
+    </fragment>
+    <fragment
+            android:id="@+id/exerciseHistoryFragment"
+            android:name="me.memoryandthought.weighty.fragments.ExerciseHistoryFragment"
+            android:label="ExerciseHistoryFragment">
+        <argument
+                android:name="exerciseId"
+                app:argType="string"/>
+    </fragment>
 </navigation>

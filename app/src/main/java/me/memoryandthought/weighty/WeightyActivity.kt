@@ -2,7 +2,9 @@ package me.memoryandthought.weighty
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.RecyclerView
+import me.memoryandthought.weighty.fragments.ExerciseListAdapter
 import me.memoryandthought.weighty.fragments.ExerciseListFragment
 import me.memoryandthought.weighty.viewmodels.ExercisesViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton as MaterialFloatingActionButton
@@ -18,8 +20,9 @@ class WeightyActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val ft = supportFragmentManager.beginTransaction()
-        val fragment = ExerciseListFragment()
+        val fragment = NavHostFragment.create(R.navigation.nav_graph)
         ft.add(android.R.id.content, fragment)
         ft.commit()
     }

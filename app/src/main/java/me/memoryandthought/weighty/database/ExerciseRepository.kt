@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import me.memoryandthought.weighty.Exercise
+import me.memoryandthought.weighty.domain.Exercise
 import java.time.Instant
 import java.util.*
 

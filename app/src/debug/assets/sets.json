@@ -1,0 +1,66 @@
+[
+  {
+    "id": "b54cb4db-b791-467b-89af-fe68fa1f5f7e",
+    "timestamp": "2019-03-28T11:00:00Z",
+    "weight": 50,
+    "reps": 5,
+    "rpe": 8,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "f68acee0-ca59-40b8-9554-43c796304fcb",
+    "timestamp": "2019-03-28T11:03:00Z",
+    "weight": 50,
+    "reps": 5,
+    "rpe": 8.5,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "94114f70-7c18-4e77-a1df-d6c5a352ba41",
+    "timestamp": "2019-03-28T11:06:00Z",
+    "weight": 50,
+    "reps": 5,
+    "rpe": 8.5,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "a2101651-5c96-44c6-8623-eacfa3715bdc",
+    "timestamp": "2019-03-28T11:09:00Z",
+    "weight": 50,
+    "reps": 5,
+    "rpe": 9.0,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "c08c5b04-9c89-4db8-8588-abf6122c5e9d",
+    "timestamp": "2019-03-28T11:11:00Z",
+    "weight": 50,
+    "reps": 5,
+    "rpe": 9.5,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "fa3fb16f-43e8-41de-87df-557cf0457bf0",
+    "timestamp": "2019-03-25T14:15:00Z",
+    "weight": 57.5,
+    "reps": 3,
+    "rpe": 8.5,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "6fc38fa6-541d-46f1-8ead-8ff5721a6ffe",
+    "timestamp": "2019-03-25T14:18:00Z",
+    "weight": 57.5,
+    "reps": 3,
+    "rpe": 9.0,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  },
+  {
+    "id": "ae015d37-5f3c-487c-98d6-aafdbb7478b8",
+    "timestamp": "2019-03-25T14:21:00Z",
+    "weight": 57.5,
+    "reps": 3,
+    "rpe": 9.5,
+    "exerciseId": "32250e7c-385c-4ec8-b06e-a73b168ae865"
+  }
+]
