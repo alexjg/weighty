@@ -40,6 +40,12 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val
         }
     }
 
+    fun unarchiveSet(set: Set) {
+        viewModelScope.launch {
+            repo.unarchiveSetForExercise(exercise, set)
+        }
+    }
+
 }
 
 sealed class ExerciseHistoryItem

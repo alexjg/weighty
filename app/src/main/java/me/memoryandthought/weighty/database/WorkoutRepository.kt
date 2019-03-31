@@ -16,6 +16,7 @@ interface WorkoutRepository {
     suspend fun addSetForExercise(exercise: Exercise, set: Set)
     suspend fun updateSetForExercise(exercise: Exercise, set: Set)
     suspend fun archiveSetForExercise(exercise: Exercise, set: Set)
+    suspend fun unarchiveSetForExercise(exercise: Exercise, set: Set)
 }
 
 class WorkoutRepositoryImpl(private val db: WeightyDatabase) : WorkoutRepository {
@@ -50,6 +51,13 @@ class WorkoutRepositoryImpl(private val db: WeightyDatabase) : WorkoutRepository
 
     override suspend fun archiveSetForExercise(exercise: Exercise, set: Set) {
         val dto = SetDTO(set.id, set.timestamp, set.weight, set.reps, set.rpe, true, exercise.id)
+        withContext(IO) {
+            db.setDao().updateSet(dto)
+        }
+    }
+
+    override suspend fun unarchiveSetForExercise(exercise: Exercise, set: Set) {
+        val dto = SetDTO(set.id, set.timestamp, set.weight, set.reps, set.rpe, false, exercise.id)
         withContext(IO) {
             db.setDao().updateSet(dto)
         }

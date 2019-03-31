@@ -29,6 +29,7 @@ import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModel
 import me.memoryandthought.weighty.viewmodels.SetRow
 import me.memoryandthought.weighty.viewmodels.WorkoutHeader
 import org.jetbrains.anko.*
+import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.support.v4.UI
@@ -93,9 +94,12 @@ class ExerciseHistoryFragment : Fragment() {
         val swipeHandler = object : SwipeToDeleteCallback(context!!) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 if (viewHolder is ExerciseHistoryAdapter.ViewHolder) {
-                    val view = viewHolder.view as SetRowView
-                    view.set?.let {
-                        viewModel.archiveSet(it)
+                    val vh = viewHolder.view as SetRowView
+                    vh.set?.let { set ->
+                        viewModel.archiveSet(set)
+                        view.snackbar(R.string.set_archived, R.string.undo) {
+                            viewModel.unarchiveSet(set)
+                        }
                     }
                 }
             }
