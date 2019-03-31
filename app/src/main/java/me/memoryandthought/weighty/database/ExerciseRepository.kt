@@ -1,5 +1,6 @@
 package me.memoryandthought.weighty.database
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import kotlinx.coroutines.Dispatchers.IO
@@ -18,7 +19,7 @@ interface ExerciseRepository {
 class ExerciseRepositoryImpl(private val db: WeightyDatabase) : ExerciseRepository {
     override fun loadExercises(): LiveData<List<Exercise>> {
         return Transformations.map(db.exerciseDao().loadExercises()) {
-            dtos -> dtos.map { Exercise(it.id, it.name, it.created) }
+            dtos -> dtos.map { Log.d("ExerciseRepositoryImpl", it.toString()); Exercise(it.id, it.name, it.created) }
         }
     }
 

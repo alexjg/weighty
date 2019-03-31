@@ -15,6 +15,21 @@ data class ExerciseDTO(
     constructor(ex: Exercise) : this(ex.id, ex.name,  ex.created, false)
 }
 
+@DatabaseView("SELECT exercise.*, SetDTO.timestamp as lastSetTimestamp " +
+        "FROM exercise left outer join SetDTO on SetDTO.id = (" +
+        "   SELECT id from SetDTO " +
+        "   where SetDTO.exerciseId = exercise.id " +
+        "   order by timestamp desc" +
+        "   limit 1" +
+        ") order by lastSetTimestamp desc")
+data class ExerciseWithTimestampDTO(
+    val id: UUID,
+    val name: String,
+    val created: Instant,
+    val archived: Boolean,
+    val lastSetTimestamp: Instant?
+)
+
 @Entity(
     tableName = "SetDTO",
     foreignKeys = arrayOf(ForeignKey(

@@ -18,8 +18,8 @@ interface ExerciseDao {
     @Insert(onConflict= OnConflictStrategy.ABORT)
     fun insertExercise(exercise: ExerciseDTO)
 
-    @Query("SELECT * FROM exercise WHERE not archived")
-    fun loadExercises(): LiveData<Array<ExerciseDTO>>
+    @Query("SELECT * FROM ExerciseWithTimestampDTO WHERE not archived")
+    fun loadExercises(): LiveData<Array<ExerciseWithTimestampDTO>>
 
     @Query("SELECT * FROM exercise where id = :exerciseId")
     fun loadExercise(exerciseId: UUID): LiveData<ExerciseDTO?>
@@ -70,7 +70,7 @@ class Converters {
 
 @Database(
     entities=arrayOf(ExerciseDTO::class, SetDTO::class),
-    views=arrayOf(ExerciseSetDTO::class),
+    views=arrayOf(ExerciseSetDTO::class, ExerciseWithTimestampDTO::class),
     exportSchema = false,
     version = 1
 )
