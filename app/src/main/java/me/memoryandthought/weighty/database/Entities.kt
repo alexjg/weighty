@@ -39,7 +39,7 @@ data class SetDTO(
 
 @DatabaseView("SELECT SetDTO.id as setId, SetDTO.timestamp, SetDTO.weight, SetDTO.reps, " +
         "SetDTO.rpe, exercise.id as exerciseId, exercise.name as exerciseName, exercise.created as exerciseCreated " +
-        "FROM exercise INNER JOIN SetDTO on SetDTO.exerciseId = exercise.id"
+        "FROM exercise INNER JOIN SetDTO on SetDTO.exerciseId = exercise.id where not exercise.archived and not SetDTO.archived"
 
 )
 data class ExerciseSetDTO(

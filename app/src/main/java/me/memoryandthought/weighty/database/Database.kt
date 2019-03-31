@@ -44,6 +44,9 @@ interface SetDao {
 
     @Insert
     fun insert(dto: SetDTO)
+
+    @Update
+    fun updateSet(dto: SetDTO)
 }
 
 class Converters {

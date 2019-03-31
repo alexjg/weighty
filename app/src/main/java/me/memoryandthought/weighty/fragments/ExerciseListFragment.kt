@@ -22,8 +22,8 @@ import org.jetbrains.anko.support.v4.UI
 class ExerciseListFragment: Fragment() {
     private lateinit var viewModel: ExercisesViewModel
     private lateinit var exercisesView: RecyclerView
-    private var exercisesAdapter = ExerciseListAdapter() { exerciseId ->
-        val action = ExerciseListFragmentDirections.actionExerciseListFragmentViewExerciseHistory(exerciseId.toString())
+    private var exercisesAdapter = ExerciseListAdapter() { exercise ->
+        val action = ExerciseListFragmentDirections.actionExerciseListFragmentViewExerciseHistory(exercise)
         findNavController().navigate(action)
     }
 

@@ -4,18 +4,16 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.InputType
-import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.textfield.TextInputEditText
 import me.memoryandthought.weighty.InjectorUtils
 import me.memoryandthought.weighty.R
 import me.memoryandthought.weighty.domain.Exercise
+import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.viewmodels.EditSetViewModel
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.textChangedListener
@@ -23,10 +21,12 @@ import org.jetbrains.anko.sdk27.coroutines.textChangedListener
 class EditSetDialog: DialogFragment() {
     private lateinit var exercise: Exercise
     private var okButton: Button? = null
+    private var editingSet: Set? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        exercise = arguments!!.getParcelable("exercise")
+        exercise = arguments!!.getParcelable("exercise")!!
+        editingSet = arguments?.getParcelable("editingSet")
     }
 
     override fun onStart() {
@@ -35,25 +35,21 @@ class EditSetDialog: DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        lateinit var repsInput: TextInputEditText
-        lateinit var spacer1: View
-        lateinit var rpeInput: TextInputEditText
-        lateinit var spacer2: View
-        lateinit var weightInput: TextInputEditText
-        val vmFactory = InjectorUtils.provideEditSetViewModelFactory(context!!, exercise)
+        val vmFactory = InjectorUtils.provideEditSetViewModelFactory(context!!, exercise, editingSet)
         val viewModel = ViewModelProviders.of(this, vmFactory)
             .get(EditSetViewModel::class.java)
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val addSetView = AnkoContext.createReusable(activity!!).apply {
-                linearLayout(){
+                linearLayout {
                     orientation = LinearLayout.HORIZONTAL
                     materialTextInputLayout {
-                        weightInput = materialTextInputEditText {
+                        materialTextInputEditText {
                             hint = context.getString(R.string.add_set_weight)
+                            setText(viewModel.weight)
                             inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_NORMAL
                             textChangedListener {
-                                onTextChanged { charsequence, p1, p2, p3 ->
+                                onTextChanged { charsequence, _, _, _ ->
                                     viewModel.weight = charsequence.toString()
                                 }
                             }
@@ -62,14 +58,15 @@ class EditSetDialog: DialogFragment() {
                         width = 0
                         weight = 1.0f
                     }
-                    spacer1 = view{}.lparams{
+                    view{}.lparams{
                         width = dip(8)
                         height = dip(1)
                     }
                     materialTextInputLayout {
                         hint = context.getString(R.string.add_set_reps)
-                        repsInput = materialTextInputEditText {
+                        materialTextInputEditText {
                             inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+                            setText(viewModel.reps)
                             textChangedListener {
                                 onTextChanged { charsequence, p1, p2, p3 ->
                                     viewModel.reps = charsequence.toString()
@@ -80,14 +77,15 @@ class EditSetDialog: DialogFragment() {
                         width = 0
                         weight = 1.0f
                     }
-                    spacer2 = view{}.lparams{
+                    view{}.lparams{
                         width = dip(8)
                         height = dip(1)
                     }
                     materialTextInputLayout {
                         hint = context.getString(R.string.add_set_rpe)
-                        rpeInput = materialTextInputEditText {
+                        materialTextInputEditText {
                             inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+                            setText(viewModel.rpe)
                             textChangedListener {
                                 onTextChanged { charsequence, p1, p2, p3 ->
                                     viewModel.rpe = charsequence.toString()
@@ -111,12 +109,14 @@ class EditSetDialog: DialogFragment() {
             viewModel.isValid.observe(this, Observer {
                 okButton?.isEnabled = it
             })
-            builder.setTitle(R.string.add_set_title)
+            builder.setTitle(if (editingSet != null) (R.string.edit_set_title) else R.string.add_set_title)
                 .setView(addSetView)
-                .setPositiveButton(R.string.add_set_positive, DialogInterface.OnClickListener { dialog, id ->
+                .setPositiveButton(
+                    if (editingSet != null) (R.string.edit_set_positive) else(R.string.add_set_positive)
+                ) { dialog, id ->
                     viewModel.saveSet()
                     getDialog()?.dismiss()
-                })
+                }
                 .setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, id ->
                     getDialog()?.cancel()
                 }).create()

@@ -1,6 +1,11 @@
 package me.memoryandthought.weighty.fragments
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -9,7 +14,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.app.BundleCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.navArgs
@@ -18,6 +23,7 @@ import com.google.android.material.card.MaterialCardView
 import me.memoryandthought.weighty.InjectorUtils
 import me.memoryandthought.weighty.R
 import me.memoryandthought.weighty.domain.Exercise
+import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.viewmodels.ExerciseHistoryItem
 import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModel
 import me.memoryandthought.weighty.viewmodels.SetRow
@@ -33,15 +39,16 @@ class ExerciseHistoryFragment : Fragment() {
 
     private lateinit var viewModel: ExerciseHistoryViewModel
     private lateinit var historyView: RecyclerView
-    private var historyAdapter = ExerciseHistoryAdapter()
-    private var exercise: Exercise? = null
+    private var historyAdapter = ExerciseHistoryAdapter(::onClickSet)
+    private lateinit var exercise: Exercise
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val args: ExerciseHistoryFragmentArgs by navArgs()
+        exercise = args.exercise
         val vmFactory = InjectorUtils.provideExerciseHistoryViewModelFactory(
             context!!,
-            UUID.fromString(args.exerciseId)
+            args.exercise
         )
         viewModel = ViewModelProviders.of(this, vmFactory)
             .get(ExerciseHistoryViewModel::class.java)
@@ -53,16 +60,11 @@ class ExerciseHistoryFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.exercise().observe(this, Observer { exercise ->
-            exercise?.let {
-                activity?.setTitle(exercise.name)
-                this.exercise = it
-            }
-        })
+        activity?.setTitle(exercise.name)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return UI {
+        val view =  UI {
             frameLayout {
                 historyView = recyclerView {
                     layoutManager = LinearLayoutManager(context)
@@ -88,14 +90,38 @@ class ExerciseHistoryFragment : Fragment() {
             }
 
         }.view
+        val swipeHandler = object : SwipeToDeleteCallback(context!!) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                if (viewHolder is ExerciseHistoryAdapter.ViewHolder) {
+                    val view = viewHolder.view as SetRowView
+                    view.set?.let {
+                        viewModel.archiveSet(it)
+                    }
+                }
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(historyView)
+        return view
+    }
+
+    fun onClickSet(set: Set): Unit {
+        val dialog = EditSetDialog()
+        val args = Bundle()
+        args.putParcelable("exercise", this@ExerciseHistoryFragment.exercise!!)
+        args.putParcelable("editingSet", set)
+        dialog.arguments = args
+        dialog.show(activity!!.supportFragmentManager, "edit_set")
     }
 
 }
 
-class ExerciseHistoryAdapter: ListAdapter<ExerciseHistoryItem, ExerciseHistoryAdapter.ViewHolder>(DIFF_CALLBACK) {
+class ExerciseHistoryAdapter(private val onClickSet: (Set) -> Unit): ListAdapter<ExerciseHistoryItem, ExerciseHistoryAdapter.ViewHolder>(DIFF_CALLBACK) {
 
-    private val HEADER_ITEM: Int = 1
-    private val SET_ROW_ITEM: Int = 2
+    companion object {
+        val HEADER_ITEM: Int = 1
+        val SET_ROW_ITEM: Int = 2
+    }
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
@@ -107,7 +133,7 @@ class ExerciseHistoryAdapter: ListAdapter<ExerciseHistoryItem, ExerciseHistoryAd
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView = when (viewType) {
             HEADER_ITEM -> WorkoutHeaderView(parent.context)
-            SET_ROW_ITEM -> SetRowView(parent.context)
+            SET_ROW_ITEM -> SetRowView(parent.context, onClickSet)
             else -> throw IllegalStateException("Unknown viewType $viewType")
         }
         return ViewHolder(itemView)
@@ -143,10 +169,11 @@ class ExerciseHistoryAdapter: ListAdapter<ExerciseHistoryItem, ExerciseHistoryAd
 
 }
 
-class SetRowView(context: Context) : MaterialCardView(context) {
+class SetRowView(context: Context, private val onClickSet: (Set) -> Unit ) : MaterialCardView(context) {
     private lateinit var weightView: SetRowColumnView
     private lateinit var repsView: SetRowColumnView
     private lateinit var rpeView: SetRowColumnView
+    var set: Set? = null
     private var container: LinearLayout
 
     init {
@@ -174,6 +201,11 @@ class SetRowView(context: Context) : MaterialCardView(context) {
                     weight = 1.0f
                 }
             }
+            onClick {
+                set?.let {
+                    onClickSet(it)
+                }
+            }
         }
         layoutParams = FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, dip(70))
         container.leftPadding = dip(16)
@@ -183,6 +215,7 @@ class SetRowView(context: Context) : MaterialCardView(context) {
     }
 
     fun bindSetRow(row: SetRow) {
+        set = row.set
         weightView.valueText = row.weight
         repsView.valueText = row.reps
         rpeView.valueText = row.rpe
@@ -193,6 +226,7 @@ class SetRowView(context: Context) : MaterialCardView(context) {
 class SetRowColumnView(context: Context): _LinearLayout(context) {
     private val headerView: TextView
     private val valueView: TextView
+    private var set: Set? = null
     var headerText: String = ""
         set(value)  {
             headerView.text = value
@@ -253,4 +287,63 @@ class WorkoutHeaderView(context: Context): LinearLayout(context) {
     fun bindWorkoutHeader(header: WorkoutHeader) {
         dateTextView.text = header.date
     }
+}
+
+
+abstract class SwipeToDeleteCallback(private val context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    private val background = ColorDrawable()
+    private val deleteIcon = ContextCompat.getDrawable(context, android.R.drawable.ic_delete)!!
+    private val clearPaint = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR) }
+
+
+    override fun onMove(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        target: RecyclerView.ViewHolder
+    ): Boolean {
+        return false
+    }
+
+    override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+        if (viewHolder.itemViewType == ExerciseHistoryAdapter.HEADER_ITEM) {
+            return 0
+        }
+        return super.getMovementFlags(recyclerView, viewHolder)
+    }
+
+    override fun onChildDraw(
+        c: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        dX: Float,
+        dY: Float,
+        actionState: Int, isCurrentlyActive: Boolean ) { val itemView = viewHolder.itemView
+        val itemHeight = itemView.bottom - itemView.top
+        val isCanceled = (dX == 0f) and !isCurrentlyActive
+
+        if (isCanceled) {
+            clearCanvas(c, itemView.right + dX, itemView.top.toFloat(), itemView.right.toFloat(), itemView.bottom.toFloat())
+        }
+
+        background.color = context.getColor(R.color.primary_dark_material_dark)
+        background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
+        background.draw(c)
+
+        val deleteIconTop = itemView.top + (itemHeight - deleteIcon.intrinsicHeight) / 2
+        val deleteIconMargin = (itemHeight - deleteIcon.intrinsicHeight) / 2
+        val deleteIconLeft = itemView.right - deleteIconMargin - deleteIcon.intrinsicHeight
+        val deleteIconRight = itemView.right - deleteIconMargin
+        val deleteIconBottom = deleteIconTop + deleteIcon.intrinsicHeight
+
+        deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom)
+        deleteIcon.draw(c)
+
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+    }
+
+    private fun clearCanvas(c: Canvas?, left: Float, top: Float, right: Float, bottom: Float){
+        c?.drawRect(left, top, right, bottom, clearPaint)
+    }
+
+
 }

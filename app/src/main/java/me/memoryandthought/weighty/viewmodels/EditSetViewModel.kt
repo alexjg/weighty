@@ -12,7 +12,7 @@ import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.*
 
-class EditSetViewModel(private val workoutRepo: WorkoutRepository, private val exercise: Exercise) : ViewModel() {
+class EditSetViewModel(private val workoutRepo: WorkoutRepository, private val exercise: Exercise, private val editingSet: Set?) : ViewModel() {
     var rpe: String = ""
         set(value) {
             field = value
@@ -35,6 +35,11 @@ class EditSetViewModel(private val workoutRepo: WorkoutRepository, private val e
         }
 
     init {
+        editingSet?.let {
+            rpe = editingSet.rpe.toString()
+            reps = editingSet.reps.toString()
+            weight = editingSet.weight.toString()
+        }
         validLiveData.postValue(checkValid())
     }
 
@@ -77,15 +82,28 @@ class EditSetViewModel(private val workoutRepo: WorkoutRepository, private val e
         if (!checkValid()) {
             throw IllegalStateException("Invalid set data")
         }
-        val set = Set(
-            UUID.randomUUID(),
-            weight.toDouble(),
-            reps.toDouble(),
-            rpe.toDouble(),
-            Instant.now()
-        )
-        viewModelScope.launch {
-            workoutRepo.addSetForExercise(exercise, set)
+        if (editingSet != null) {
+            val updatedSet = editingSet.copy(
+                weight = weight.toDouble(),
+                reps = reps.toDouble(),
+                rpe = rpe.toDouble()
+            )
+            viewModelScope.launch {
+                workoutRepo.updateSetForExercise(
+                    exercise, updatedSet
+                )
+            }
+        } else {
+            val set = Set(
+                UUID.randomUUID(),
+                weight.toDouble(),
+                reps.toDouble(),
+                rpe.toDouble(),
+                Instant.now()
+            )
+            viewModelScope.launch {
+                workoutRepo.addSetForExercise(exercise, set)
+            }
         }
     }
 

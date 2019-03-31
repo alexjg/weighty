@@ -19,7 +19,7 @@ import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.textView
 import java.util.*
 
-class ExerciseListAdapter(private val onClickExercise: (UUID) -> Unit) : ListAdapter<Exercise, ExerciseListAdapter.ViewHolder>(
+class ExerciseListAdapter(private val onClickExercise: (Exercise) -> Unit) : ListAdapter<Exercise, ExerciseListAdapter.ViewHolder>(
     DIFF_CALLBACK
 ) {
 
@@ -61,10 +61,10 @@ class ExerciseListItemView(context: Context) : MaterialCardView(context) {
     }
 
 
-    fun bindExercise(exercise: Exercise, onClickExercise: (UUID) -> Unit) {
+    fun bindExercise(exercise: Exercise, onClickExercise: (Exercise) -> Unit) {
         nameView.text = exercise.name
         nameView.onClick {
-            onClickExercise(exercise.id)
+            onClickExercise(exercise)
         }
     }
 

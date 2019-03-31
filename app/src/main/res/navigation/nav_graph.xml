@@ -17,7 +17,7 @@
             android:name="me.memoryandthought.weighty.fragments.ExerciseHistoryFragment"
             android:label="ExerciseHistoryFragment">
         <argument
-                android:name="exerciseId"
-                app:argType="string"/>
+                android:name="exercise"
+                app:argType="me.memoryandthought.weighty.domain.Exercise"/>
     </fragment>
 </navigation>

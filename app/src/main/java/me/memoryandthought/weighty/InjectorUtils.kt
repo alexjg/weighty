@@ -5,6 +5,7 @@ import me.memoryandthought.weighty.database.ExerciseRepositoryImpl
 import me.memoryandthought.weighty.database.WeightyDatabase
 import me.memoryandthought.weighty.database.WorkoutRepositoryImpl
 import me.memoryandthought.weighty.domain.Exercise
+import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.viewmodels.EditSetViewModelFactory
 import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModelFactory
 import me.memoryandthought.weighty.viewmodels.ExercisesViewModelFactory
@@ -16,17 +17,16 @@ object InjectorUtils {
         return ExercisesViewModelFactory(repository)
     }
 
-    fun provideExerciseHistoryViewModelFactory(context: Context, exerciseId: UUID): ExerciseHistoryViewModelFactory {
+    fun provideExerciseHistoryViewModelFactory(context: Context, exercise: Exercise): ExerciseHistoryViewModelFactory {
         val db = WeightyDatabase.getInstance(context)
         val workoutRepo = WorkoutRepositoryImpl(db)
-        val exerciseRepo = ExerciseRepositoryImpl(db)
-        return ExerciseHistoryViewModelFactory(workoutRepo, exerciseRepo, exerciseId)
+        return ExerciseHistoryViewModelFactory(workoutRepo, exercise)
     }
 
-    fun provideEditSetViewModelFactory(context: Context, exercise: Exercise): EditSetViewModelFactory {
+    fun provideEditSetViewModelFactory(context: Context, exercise: Exercise, editingSet: Set?): EditSetViewModelFactory {
         val db = WeightyDatabase.getInstance(context)
         val workoutRepo = WorkoutRepositoryImpl(db)
-        return EditSetViewModelFactory(workoutRepo, exercise)
+        return EditSetViewModelFactory(workoutRepo, exercise, editingSet)
     }
 
 }

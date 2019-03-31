@@ -12,4 +12,6 @@
     <string name="add_set_weight">Weight</string>
     <string name="add_set_rpe">RPE</string>
     <string name="add_set_reps">Reps</string>
+    <string name="edit_set_title">Edit set</string>
+    <string name="edit_set_positive">Save set</string>
 </resources>
