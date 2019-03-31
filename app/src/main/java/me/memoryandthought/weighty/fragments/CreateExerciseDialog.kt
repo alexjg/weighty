@@ -58,10 +58,10 @@ class CreateExerciseDialog : DialogFragment() {
                 .setView(createExerciseView)
                 .setPositiveButton(R.string.create_exercise_positive, DialogInterface.OnClickListener { dialog, id ->
                     viewModel.addExercise(nameText.text.toString())
-                    getDialog().dismiss()
+                    getDialog()?.dismiss()
                 })
                 .setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, id ->
-                    getDialog().cancel()
+                    getDialog()?.cancel()
                 })
             builder.create()
         } ?: throw IllegalStateException("Invalid activity")

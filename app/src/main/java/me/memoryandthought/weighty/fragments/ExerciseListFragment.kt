@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import me.memoryandthought.weighty.*
@@ -21,7 +22,10 @@ import org.jetbrains.anko.support.v4.UI
 class ExerciseListFragment: Fragment() {
     private lateinit var viewModel: ExercisesViewModel
     private lateinit var exercisesView: RecyclerView
-    private var exercisesAdapter = ExerciseListAdapter()
+    private var exercisesAdapter = ExerciseListAdapter() { exerciseId ->
+        val action = ExerciseListFragmentDirections.actionExerciseListFragmentViewExerciseHistory(exerciseId.toString())
+        findNavController().navigate(action)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +36,11 @@ class ExerciseListFragment: Fragment() {
             exercisesAdapter.submitList(exercises)
         })
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        activity?.setTitle("Exercises")
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

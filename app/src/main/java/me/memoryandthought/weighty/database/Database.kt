@@ -21,18 +21,19 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercise WHERE not archived")
     fun loadExercises(): LiveData<Array<ExerciseDTO>>
 
+    @Query("SELECT * FROM exercise where id = :exerciseId")
+    fun loadExercise(exerciseId: UUID): LiveData<ExerciseDTO?>
+
     @Update
     fun updateExercise(exercise: ExerciseDTO)
 
     @Insert
     fun insertAll(exercises: List<ExerciseDTO>)
-
-
 }
 
 @Dao
 interface WorkoutDao {
-    @Query("SELECT * from ExerciseSetDTO where exerciseId = :exerciseId")
+    @Query("SELECT * from ExerciseSetDTO where exerciseId = :exerciseId order by timestamp")
     fun exerciseSetsForExercise(exerciseId: UUID): LiveData<Array<ExerciseSetDTO>>
 }
 

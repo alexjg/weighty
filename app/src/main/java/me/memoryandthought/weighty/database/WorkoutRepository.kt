@@ -18,13 +18,13 @@ class WorkoutRepositoryImpl(private val db: WeightyDatabase) : WorkoutRepository
         val localTimeZone = ZonedDateTime.now().zone
         val setDtos = db.workoutDao().exerciseSetsForExercise(exerciseId)
         return Transformations.map(setDtos) { setDtos ->
-            setDtos.groupBy({ LocalDateTime.ofInstant(it.timestamp, localTimeZone)}).entries.map{ (date, setDtos) ->
+            setDtos.groupBy({ LocalDateTime.ofInstant(it.timestamp, localTimeZone).toLocalDate()}).entries.map{ (date, setDtos) ->
                 val sets = setDtos.map {
                     Set(it.weight, it.reps, it.rpe, it.timestamp)
                 }
                 val aSetDto = setDtos.first()
                 val exercise = Exercise(aSetDto.exerciseId, aSetDto.exerciseName, aSetDto.exerciseCreated)
-                Workout(date.toLocalDate(), exercise, sets)
+                Workout(date, exercise, sets)
             }
         }
     }

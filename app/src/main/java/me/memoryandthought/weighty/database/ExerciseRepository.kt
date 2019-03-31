@@ -10,6 +10,7 @@ import java.util.*
 
 interface ExerciseRepository {
     fun loadExercises(): LiveData<List<Exercise>>
+    fun loadExercise(id: UUID): LiveData<Exercise?>
     suspend fun addExercise(name: String)
     suspend fun archiveExercise(ex: Exercise)
 }
@@ -18,6 +19,14 @@ class ExerciseRepositoryImpl(private val db: WeightyDatabase) : ExerciseReposito
     override fun loadExercises(): LiveData<List<Exercise>> {
         return Transformations.map(db.exerciseDao().loadExercises()) {
             dtos -> dtos.map { Exercise(it.id, it.name, it.created) }
+        }
+    }
+
+    override fun loadExercise(id: UUID): LiveData<Exercise?> {
+        return Transformations.map(db.exerciseDao().loadExercise(id)){ dto ->
+            dto?.let {
+                Exercise(dto.id, dto.name, dto.created)
+            }
         }
     }
 

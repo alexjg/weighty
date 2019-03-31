@@ -17,3 +17,5 @@ fun ViewManager.materialTextInputLayout(theme: Int = 0, init: TextInputLayout.()
 fun ViewManager.materialTextInputEditText(theme: Int = 0, init: TextInputEditText.() -> Unit = {}) = ankoView({
     TextInputEditText(it)
 }, theme, init)
+
+fun ViewManager.setRowDataItem(theme: Int = 0, init: SetRowColumnView.() -> Unit = {}) = ankoView({SetRowColumnView(it)}, theme, init)

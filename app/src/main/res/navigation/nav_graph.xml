@@ -7,7 +7,7 @@
     <fragment
             android:id="@+id/exerciseListFragment"
             android:name="me.memoryandthought.weighty.fragments.ExerciseListFragment"
-            android:label="ExerciseListFragment">
+            android:label="Exercises">
         <action
                 android:id="@+id/action_exerciseListFragment_view_exercise_history"
                 app:destination="@id/exerciseHistoryFragment"/>
