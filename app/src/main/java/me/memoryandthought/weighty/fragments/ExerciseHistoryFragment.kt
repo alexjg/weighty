@@ -9,18 +9,22 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.app.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.*
 import com.google.android.material.card.MaterialCardView
 import me.memoryandthought.weighty.InjectorUtils
+import me.memoryandthought.weighty.R
+import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.viewmodels.ExerciseHistoryItem
 import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModel
 import me.memoryandthought.weighty.viewmodels.SetRow
 import me.memoryandthought.weighty.viewmodels.WorkoutHeader
 import org.jetbrains.anko.*
 import org.jetbrains.anko.recyclerview.v7.recyclerView
+import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.support.v4.UI
 import java.lang.IllegalStateException
 import java.util.UUID
@@ -30,6 +34,7 @@ class ExerciseHistoryFragment : Fragment() {
     private lateinit var viewModel: ExerciseHistoryViewModel
     private lateinit var historyView: RecyclerView
     private var historyAdapter = ExerciseHistoryAdapter()
+    private var exercise: Exercise? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +56,7 @@ class ExerciseHistoryFragment : Fragment() {
         viewModel.exercise().observe(this, Observer { exercise ->
             exercise?.let {
                 activity?.setTitle(exercise.name)
+                this.exercise = it
             }
         })
     }
@@ -64,6 +70,20 @@ class ExerciseHistoryFragment : Fragment() {
                 }.lparams {
                     width = matchParent
                     height = wrapContent
+                }
+                materialFloatingActionButton(R.style.Widget_MaterialComponents_FloatingActionButton) {
+                    imageResource = android.R.drawable.ic_input_add
+                    onClick {
+                        val dialog = EditSetDialog()
+                        val args = Bundle()
+                        args.putParcelable("exercise", this@ExerciseHistoryFragment.exercise!!)
+                        dialog.arguments = args
+                        dialog.show(activity!!.supportFragmentManager, "add_set")
+                    }
+                }.lparams {
+                    rightMargin = dip(16)
+                    bottomMargin = dip(16)
+                    gravity = Gravity.END or Gravity.BOTTOM
                 }
             }
 

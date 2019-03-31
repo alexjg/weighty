@@ -1,5 +1,4 @@
 package me.memoryandthought.weighty.fragments
-
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface

@@ -7,4 +7,9 @@
     <string name="create_exercise_positive">Create</string>
     <string name="cancel">Cancel</string>
     <string name="create_exercise_name_hint">Name</string>
+    <string name="add_set_title">Add set</string>
+    <string name="add_set_positive">Add</string>
+    <string name="add_set_weight">Weight</string>
+    <string name="add_set_rpe">RPE</string>
+    <string name="add_set_reps">Reps</string>
 </resources>

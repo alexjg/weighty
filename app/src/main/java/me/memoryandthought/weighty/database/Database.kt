@@ -33,7 +33,7 @@ interface ExerciseDao {
 
 @Dao
 interface WorkoutDao {
-    @Query("SELECT * from ExerciseSetDTO where exerciseId = :exerciseId order by timestamp")
+    @Query("SELECT * from ExerciseSetDTO where exerciseId = :exerciseId order by timestamp desc")
     fun exerciseSetsForExercise(exerciseId: UUID): LiveData<Array<ExerciseSetDTO>>
 }
 
@@ -41,6 +41,9 @@ interface WorkoutDao {
 interface SetDao {
     @Insert
     fun insertAll(sets: List<SetDTO>)
+
+    @Insert
+    fun insert(dto: SetDTO)
 }
 
 class Converters {

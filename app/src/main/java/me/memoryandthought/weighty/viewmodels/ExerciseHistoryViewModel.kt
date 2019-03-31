@@ -11,9 +11,6 @@ import java.text.DecimalFormat
 import java.util.*
 
 class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val exerciseRepo: ExerciseRepository, private val exerciseId: UUID): ViewModel() {
-    fun workoutsForExercise(): LiveData<List<Workout>> {
-        return repo.loadWorkoutsForExerciseId(exerciseId)
-    }
 
     fun exercise(): LiveData<Exercise?> {
         return exerciseRepo.loadExercise(exerciseId)
