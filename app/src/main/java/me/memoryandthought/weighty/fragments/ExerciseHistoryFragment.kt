@@ -34,7 +34,6 @@ import org.jetbrains.anko.recyclerview.v7.recyclerView
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.support.v4.UI
 import java.lang.IllegalStateException
-import java.util.UUID
 
 class ExerciseHistoryFragment : Fragment() {
 
@@ -42,6 +41,7 @@ class ExerciseHistoryFragment : Fragment() {
     private lateinit var historyView: RecyclerView
     private var historyAdapter = ExerciseHistoryAdapter(::onClickSet)
     private lateinit var exercise: Exercise
+    private var mostRecentSet: Set? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +55,9 @@ class ExerciseHistoryFragment : Fragment() {
             .get(ExerciseHistoryViewModel::class.java)
         viewModel.historyItems().observe(this, Observer {
             historyAdapter.submitList(it)
+        })
+        viewModel.mostRecentSet().observe(this, Observer {
+            mostRecentSet = it
         })
 
     }
@@ -80,6 +83,9 @@ class ExerciseHistoryFragment : Fragment() {
                         val dialog = EditSetDialog()
                         val args = Bundle()
                         args.putParcelable("exercise", this@ExerciseHistoryFragment.exercise!!)
+                        mostRecentSet?.let {
+                            args.putParcelable("templateSet", it)
+                        }
                         dialog.arguments = args
                         dialog.show(activity!!.supportFragmentManager, "add_set")
                     }

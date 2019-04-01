@@ -9,9 +9,10 @@ import me.memoryandthought.weighty.domain.Set
 class EditSetViewModelFactory(
     private val repository: WorkoutRepository,
     private val exercise: Exercise,
-    private val editingSet: Set?) : ViewModelProvider.NewInstanceFactory() {
+    private val editingSet: Set?,
+    private val templateSet: Set?) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return EditSetViewModel(repository, exercise, editingSet) as T
+        return EditSetViewModel(repository, exercise, editingSet, templateSet) as T
     }
 }

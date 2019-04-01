@@ -1,9 +1,6 @@
 package me.memoryandthought.weighty.viewmodels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import kotlinx.coroutines.launch
 import me.memoryandthought.weighty.database.ExerciseRepository
 import me.memoryandthought.weighty.database.WorkoutRepository
@@ -31,6 +28,14 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val
                 listOf(header) + setRows
 
             }.flatten()
+        }
+    }
+
+    fun mostRecentSet(): LiveData<Set?> {
+        return Transformations.map(repo.loadWorkoutsForExerciseId(exercise.id)) { workouts ->
+            workouts.firstOrNull()?.let {
+                it.sets.lastOrNull()
+            }
         }
     }
 

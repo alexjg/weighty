@@ -23,10 +23,10 @@ object InjectorUtils {
         return ExerciseHistoryViewModelFactory(workoutRepo, exercise)
     }
 
-    fun provideEditSetViewModelFactory(context: Context, exercise: Exercise, editingSet: Set?): EditSetViewModelFactory {
+    fun provideEditSetViewModelFactory(context: Context, exercise: Exercise, editingSet: Set?, templateSet: Set?): EditSetViewModelFactory {
         val db = WeightyDatabase.getInstance(context)
         val workoutRepo = WorkoutRepositoryImpl(db)
-        return EditSetViewModelFactory(workoutRepo, exercise, editingSet)
+        return EditSetViewModelFactory(workoutRepo, exercise, editingSet, templateSet)
     }
 
 }

@@ -22,11 +22,13 @@ class EditSetDialog: DialogFragment() {
     private lateinit var exercise: Exercise
     private var okButton: Button? = null
     private var editingSet: Set? = null
+    private var templateSet: Set? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         exercise = arguments!!.getParcelable("exercise")!!
         editingSet = arguments?.getParcelable("editingSet")
+        templateSet = arguments?.getParcelable("templateSet")
     }
 
     override fun onStart() {
@@ -35,7 +37,7 @@ class EditSetDialog: DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val vmFactory = InjectorUtils.provideEditSetViewModelFactory(context!!, exercise, editingSet)
+        val vmFactory = InjectorUtils.provideEditSetViewModelFactory(context!!, exercise, editingSet, templateSet)
         val viewModel = ViewModelProviders.of(this, vmFactory)
             .get(EditSetViewModel::class.java)
         return activity?.let {

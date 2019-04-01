@@ -12,7 +12,11 @@ import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.*
 
-class EditSetViewModel(private val workoutRepo: WorkoutRepository, private val exercise: Exercise, private val editingSet: Set?) : ViewModel() {
+class EditSetViewModel(
+    private val workoutRepo: WorkoutRepository,
+    private val exercise: Exercise,
+    private val editingSet: Set?,
+    private val templateSet: Set?) : ViewModel() {
     var rpe: String = ""
         set(value) {
             field = value
@@ -35,6 +39,11 @@ class EditSetViewModel(private val workoutRepo: WorkoutRepository, private val e
         }
 
     init {
+        templateSet?.let {
+            rpe = templateSet.rpe.toString()
+            reps = templateSet.reps.toString()
+            weight = templateSet.weight.toString()
+        }
         editingSet?.let {
             rpe = editingSet.rpe.toString()
             reps = editingSet.reps.toString()
