@@ -34,7 +34,7 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val
     fun mostRecentSet(): LiveData<Set?> {
         return Transformations.map(repo.loadWorkoutsForExerciseId(exercise.id)) { workouts ->
             workouts.firstOrNull()?.let {
-                it.sets.lastOrNull()
+                it.sets.firstOrNull()
             }
         }
     }
