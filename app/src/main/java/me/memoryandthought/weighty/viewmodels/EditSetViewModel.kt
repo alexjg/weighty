@@ -8,15 +8,17 @@ import kotlinx.coroutines.launch
 import me.memoryandthought.weighty.database.WorkoutRepository
 import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.domain.Exercise
+import me.memoryandthought.weighty.fragments.EditSetDialog
 import java.lang.IllegalStateException
+import java.text.DecimalFormat
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 class EditSetViewModel(
     private val workoutRepo: WorkoutRepository,
     private val exercise: Exercise,
-    private val editingSet: Set?,
-    private val templateSet: Set?) : ViewModel() {
+    private val mode: FormDialogMode<Set>): ViewModel() {
+
     var rpe: String = ""
         set(value) {
             field = value
@@ -35,19 +37,39 @@ class EditSetViewModel(
     private val validLiveData = MutableLiveData<Boolean>()
     val isValid: LiveData<Boolean>
         get() {
-            return validLiveData as LiveData<Boolean>
+            return validLiveData
+        }
+
+    val title: String
+        get() {
+            return when (mode) {
+                is Create, is CreateFromTemplate -> "Add set"
+                is Edit<Set> -> "Edit set"
+            }
+        }
+
+    val positiveButton: String
+        get() {
+            return when (mode) {
+                is Create, is CreateFromTemplate -> "Add"
+                is Edit<Set> -> "Update"
+            }
         }
 
     init {
-        templateSet?.let {
-            rpe = templateSet.rpe.toString()
-            reps = templateSet.reps.toString()
-            weight = templateSet.weight.toString()
-        }
-        editingSet?.let {
-            rpe = editingSet.rpe.toString()
-            reps = editingSet.reps.toString()
-            weight = editingSet.weight.toString()
+        when (mode) {
+            is Edit<Set> -> {
+                rpe = mode.data.rpe.toString()
+                val df = DecimalFormat("#")
+                reps = df.format(mode.data.reps)
+                weight = mode.data.weight.toString()
+            }
+            is CreateFromTemplate -> {
+               rpe = mode.template.rpe.toString()
+               val df = DecimalFormat("#")
+               reps = df.format(mode.template.reps)
+               weight = mode.template.weight.toString()
+            }
         }
         validLiveData.postValue(checkValid())
     }
@@ -91,27 +113,30 @@ class EditSetViewModel(
         if (!checkValid()) {
             throw IllegalStateException("Invalid set data")
         }
-        if (editingSet != null) {
-            val updatedSet = editingSet.copy(
-                weight = weight.toDouble(),
-                reps = reps.toDouble(),
-                rpe = rpe.toDouble()
-            )
-            viewModelScope.launch {
-                workoutRepo.updateSetForExercise(
-                    exercise, updatedSet
+        when (mode) {
+            is Create, is CreateFromTemplate -> {
+                val set = Set(
+                    UUID.randomUUID(),
+                    weight.toDouble(),
+                    reps.toDouble(),
+                    rpe.toDouble(),
+                    Instant.now()
                 )
+                viewModelScope.launch {
+                    workoutRepo.addSetForExercise(exercise, set)
+                }
             }
-        } else {
-            val set = Set(
-                UUID.randomUUID(),
-                weight.toDouble(),
-                reps.toDouble(),
-                rpe.toDouble(),
-                Instant.now()
-            )
-            viewModelScope.launch {
-                workoutRepo.addSetForExercise(exercise, set)
+            is Edit<Set> -> {
+                val updatedSet = mode.data.copy(
+                    weight = weight.toDouble(),
+                    reps = reps.toDouble(),
+                    rpe = rpe.toDouble()
+                )
+                viewModelScope.launch {
+                    workoutRepo.updateSetForExercise(
+                        exercise, updatedSet
+                    )
+                }
             }
         }
     }

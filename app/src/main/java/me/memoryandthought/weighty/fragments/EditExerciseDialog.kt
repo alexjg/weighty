@@ -10,18 +10,22 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.textfield.TextInputEditText
 import me.memoryandthought.weighty.*
-import me.memoryandthought.weighty.viewmodels.ExercisesViewModel
+import me.memoryandthought.weighty.domain.Exercise
+import me.memoryandthought.weighty.viewmodels.EditExerciseViewModel
+import me.memoryandthought.weighty.viewmodels.FormDialogMode
 import org.jetbrains.anko.*
 import java.lang.IllegalStateException
 
-class CreateExerciseDialog : DialogFragment() {
-    private lateinit var viewModel: ExercisesViewModel
+class EditExerciseDialog : DialogFragment() {
+    private lateinit var viewModel: EditExerciseViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val vmFactory = InjectorUtils.provideExercisesViewModelFactory(context!!)
+        var mode: FormDialogMode<Exercise> = arguments?.getParcelable("mode")!!
+        val vmFactory = InjectorUtils.provideEditExerciseViewModelFactory(context!!, mode)
         viewModel = ViewModelProviders.of(this, vmFactory)
-            .get(ExercisesViewModel::class.java)
+            .get(EditExerciseViewModel::class.java)
     }
 
 
@@ -37,7 +41,7 @@ class CreateExerciseDialog : DialogFragment() {
                     materialTextInputLayout {
                         hint = context.getString(R.string.create_exercise_name_hint)
                         nameText = materialTextInputEditText {
-
+                            setText(viewModel.name)
                         }.lparams{
                             width = matchParent
                             height = wrapContent
@@ -53,15 +57,15 @@ class CreateExerciseDialog : DialogFragment() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            builder.setTitle(R.string.create_exercise_title)
+            builder.setTitle(viewModel.titleResource)
                 .setView(createExerciseView)
-                .setPositiveButton(R.string.create_exercise_positive, DialogInterface.OnClickListener { dialog, id ->
-                    viewModel.addExercise(nameText.text.toString())
-                    getDialog()?.dismiss()
-                })
-                .setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, id ->
-                    getDialog()?.cancel()
-                })
+                .setPositiveButton(viewModel.positiveButtonResource) { _, _ ->
+                    viewModel.save(nameText.text.toString())
+                    dialog?.dismiss()
+                }
+                .setNegativeButton(R.string.cancel) { _, _ ->
+                    dialog?.cancel()
+                }
             builder.create()
         } ?: throw IllegalStateException("Invalid activity")
     }

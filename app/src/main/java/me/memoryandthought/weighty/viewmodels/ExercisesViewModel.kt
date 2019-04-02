@@ -12,9 +12,15 @@ class ExercisesViewModel(private val repo: ExerciseRepository) : ViewModel() {
         return repo.loadExercises()
     }
 
-    fun addExercise(name: String) {
+    fun archiveExercise(exercise: Exercise) {
         viewModelScope.launch {
-            repo.addExercise(name)
+            repo.archiveExercise(exercise)
+        }
+    }
+
+    fun unarchiveExercise(exercise: Exercise) {
+        viewModelScope.launch {
+            repo.unarchiveExercise(exercise)
         }
     }
 }

@@ -1,6 +1,7 @@
 package me.memoryandthought.weighty.fragments
 
 import android.view.ViewManager
+import android.widget.ImageButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -19,3 +20,5 @@ fun ViewManager.materialTextInputEditText(theme: Int = 0, init: TextInputEditTex
 }, theme, init)
 
 fun ViewManager.setRowDataItem(theme: Int = 0, init: SetRowColumnView.() -> Unit = {}) = ankoView({SetRowColumnView(it)}, theme, init)
+
+fun ViewManager.overflowImageButton(theme: Int = 0, init: ImageButton.() -> Unit = {}) = ankoView({ImageButton(it, null, android.R.attr.actionOverflowButtonStyle)}, theme, init)

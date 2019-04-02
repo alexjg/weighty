@@ -5,14 +5,14 @@ import androidx.lifecycle.ViewModelProvider
 import me.memoryandthought.weighty.database.WorkoutRepository;
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.domain.Set
+import me.memoryandthought.weighty.fragments.EditSetDialog
 
 class EditSetViewModelFactory(
     private val repository: WorkoutRepository,
     private val exercise: Exercise,
-    private val editingSet: Set?,
-    private val templateSet: Set?) : ViewModelProvider.NewInstanceFactory() {
+    private val mode: FormDialogMode<Set>) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return EditSetViewModel(repository, exercise, editingSet, templateSet) as T
+        return EditSetViewModel(repository, exercise, mode) as T
     }
 }

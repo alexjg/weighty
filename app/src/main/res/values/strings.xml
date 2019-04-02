@@ -4,9 +4,14 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="create_exercise_title">Create Exercise</string>
+    <string name="edit_exercise_title">Edit Exercise</string>
     <string name="create_exercise_positive">Create</string>
+    <string name="edit_exercise_positive">Update</string>
+    <string name="exercise_archived">Exercise archived</string>
     <string name="cancel">Cancel</string>
     <string name="create_exercise_name_hint">Name</string>
+    <string name="exercise_menu_edit">Edit</string>
+    <string name="exercise_menu_archive">Archive</string>
     <string name="add_set_title">Add set</string>
     <string name="add_set_positive">Add</string>
     <string name="add_set_weight">Weight</string>

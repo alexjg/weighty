@@ -18,7 +18,7 @@ interface ExerciseDao {
     @Insert(onConflict= OnConflictStrategy.ABORT)
     fun insertExercise(exercise: ExerciseDTO)
 
-    @Query("SELECT * FROM ExerciseWithTimestampDTO WHERE not archived")
+    @Query("SELECT * FROM ExerciseWithTimestampDTO WHERE archived = 0")
     fun loadExercises(): LiveData<Array<ExerciseWithTimestampDTO>>
 
     @Query("SELECT * FROM exercise where id = :exerciseId")

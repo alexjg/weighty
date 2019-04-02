@@ -24,10 +24,7 @@ import me.memoryandthought.weighty.InjectorUtils
 import me.memoryandthought.weighty.R
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.domain.Set
-import me.memoryandthought.weighty.viewmodels.ExerciseHistoryItem
-import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModel
-import me.memoryandthought.weighty.viewmodels.SetRow
-import me.memoryandthought.weighty.viewmodels.WorkoutHeader
+import me.memoryandthought.weighty.viewmodels.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.recyclerview.v7.recyclerView
@@ -83,9 +80,9 @@ class ExerciseHistoryFragment : Fragment() {
                         val dialog = EditSetDialog()
                         val args = Bundle()
                         args.putParcelable("exercise", this@ExerciseHistoryFragment.exercise!!)
-                        mostRecentSet?.let {
-                            args.putParcelable("templateSet", it)
-                        }
+                        args.putParcelable("mode", mostRecentSet?.let {
+                            CreateFromTemplate(it)
+                        } ?: Create)
                         dialog.arguments = args
                         dialog.show(activity!!.supportFragmentManager, "add_set")
                     }
@@ -115,11 +112,11 @@ class ExerciseHistoryFragment : Fragment() {
         return view
     }
 
-    fun onClickSet(set: Set): Unit {
+    private fun onClickSet(set: Set) {
         val dialog = EditSetDialog()
         val args = Bundle()
         args.putParcelable("exercise", this@ExerciseHistoryFragment.exercise!!)
-        args.putParcelable("editingSet", set)
+        args.putParcelable("mode", Edit(set))
         dialog.arguments = args
         dialog.show(activity!!.supportFragmentManager, "edit_set")
     }

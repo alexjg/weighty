@@ -6,9 +6,8 @@ import me.memoryandthought.weighty.database.WeightyDatabase
 import me.memoryandthought.weighty.database.WorkoutRepositoryImpl
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.domain.Set
-import me.memoryandthought.weighty.viewmodels.EditSetViewModelFactory
-import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModelFactory
-import me.memoryandthought.weighty.viewmodels.ExercisesViewModelFactory
+import me.memoryandthought.weighty.fragments.EditSetDialog
+import me.memoryandthought.weighty.viewmodels.*
 import java.util.*
 
 object InjectorUtils {
@@ -17,16 +16,21 @@ object InjectorUtils {
         return ExercisesViewModelFactory(repository)
     }
 
+    fun provideEditExerciseViewModelFactory(context: Context, mode: FormDialogMode<Exercise>): EditExerciseViewModelFactory {
+        val repository = ExerciseRepositoryImpl(WeightyDatabase.getInstance(context))
+        return EditExerciseViewModelFactory(repository, mode)
+    }
+
     fun provideExerciseHistoryViewModelFactory(context: Context, exercise: Exercise): ExerciseHistoryViewModelFactory {
         val db = WeightyDatabase.getInstance(context)
         val workoutRepo = WorkoutRepositoryImpl(db)
         return ExerciseHistoryViewModelFactory(workoutRepo, exercise)
     }
 
-    fun provideEditSetViewModelFactory(context: Context, exercise: Exercise, editingSet: Set?, templateSet: Set?): EditSetViewModelFactory {
+    fun provideEditSetViewModelFactory(context: Context, exercise: Exercise, mode: FormDialogMode<Set>): EditSetViewModelFactory {
         val db = WeightyDatabase.getInstance(context)
         val workoutRepo = WorkoutRepositoryImpl(db)
-        return EditSetViewModelFactory(workoutRepo, exercise, editingSet, templateSet)
+        return EditSetViewModelFactory(workoutRepo, exercise, mode)
     }
 
 }

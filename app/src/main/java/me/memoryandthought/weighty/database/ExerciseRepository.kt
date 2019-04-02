@@ -13,7 +13,9 @@ interface ExerciseRepository {
     fun loadExercises(): LiveData<List<Exercise>>
     fun loadExercise(id: UUID): LiveData<Exercise?>
     suspend fun addExercise(name: String)
+    suspend fun updateExercise(ex: Exercise)
     suspend fun archiveExercise(ex: Exercise)
+    suspend fun unarchiveExercise(ex: Exercise)
 }
 
 class ExerciseRepositoryImpl(private val db: WeightyDatabase) : ExerciseRepository {
@@ -39,9 +41,23 @@ class ExerciseRepositoryImpl(private val db: WeightyDatabase) : ExerciseReposito
         }
     }
 
+    override suspend fun updateExercise(ex: Exercise) {
+        withContext(IO) {
+            val dto = ExerciseDTO(ex)
+            db.exerciseDao().updateExercise(dto)
+        }
+    }
+
     override suspend fun archiveExercise(ex: Exercise) {
         withContext(IO) {
             val dto = ExerciseDTO(ex).copy(archived = true)
+            db.exerciseDao().updateExercise(dto)
+        }
+    }
+
+    override suspend fun unarchiveExercise(ex: Exercise) {
+        withContext(IO) {
+            val dto = ExerciseDTO(ex).copy(archived = false)
             db.exerciseDao().updateExercise(dto)
         }
     }
