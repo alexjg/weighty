@@ -5,13 +5,18 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Parcelable
 import android.text.InputType
+import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import kotlinx.android.parcel.Parcelize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.memoryandthought.weighty.InjectorUtils
 import me.memoryandthought.weighty.R
 import me.memoryandthought.weighty.domain.Exercise
@@ -113,15 +118,27 @@ class EditSetDialog: DialogFragment() {
             viewModel.isValid.observe(this, Observer { isValid ->
                 okButton?.isEnabled = isValid
             })
-            builder.setTitle(viewModel.title)
+            val dialog = builder.setTitle(viewModel.title)
                 .setView(addSetView)
-                .setPositiveButton(viewModel.positiveButton) { _, _ ->
-                    viewModel.saveSet()
-                    dialog?.dismiss()
+                .setPositiveButton(viewModel.positiveButton, null)
+                .setNegativeButton(R.string.cancel, null)
+                .create()
+            // This hack is necessary rather than doing it in the listener for setPositiveButton
+            // because the dialog always dismisses when the handler completes but we actually need
+            // wait until the viewModel.saveSet call is complete
+            dialog.setOnShowListener {
+                val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                button.setOnClickListener {
+                    viewModel.viewModelScope.launch {
+                        viewModel.saveSet()
+                        withContext(Dispatchers.Main){
+                            dialog?.dismiss()
+                        }
+                    }
                 }
-                .setNegativeButton(R.string.cancel) { _, _ ->
-                    dialog?.cancel()
-                }.create()
+            }
+            dialog
+
         } ?: throw IllegalStateException("Invalid activity")
     }
 

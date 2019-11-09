@@ -4,12 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.memoryandthought.weighty.database.WorkoutRepository
 import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.domain.Exercise
-import me.memoryandthought.weighty.fragments.EditSetDialog
-import java.lang.IllegalStateException
 import java.text.DecimalFormat
 import java.time.Instant
 import java.util.UUID
@@ -109,30 +108,26 @@ class EditSetViewModel(
         return false
     }
 
-    fun saveSet() {
-        if (!checkValid()) {
-            throw IllegalStateException("Invalid set data")
-        }
-        when (mode) {
-            is Create, is CreateFromTemplate -> {
-                val set = Set(
-                    UUID.randomUUID(),
-                    weight.toDouble(),
-                    reps.toDouble(),
-                    rpe.toDouble(),
-                    Instant.now()
-                )
-                viewModelScope.launch {
+    suspend fun saveSet() {
+        check(checkValid()) { "Invalid set data" }
+        withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
+            when (mode) {
+                is Create, is CreateFromTemplate -> {
+                    val set = Set(
+                        UUID.randomUUID(),
+                        weight.toDouble(),
+                        reps.toDouble(),
+                        rpe.toDouble(),
+                        Instant.now()
+                    )
                     workoutRepo.addSetForExercise(exercise, set)
                 }
-            }
-            is Edit<Set> -> {
-                val updatedSet = mode.data.copy(
-                    weight = weight.toDouble(),
-                    reps = reps.toDouble(),
-                    rpe = rpe.toDouble()
-                )
-                viewModelScope.launch {
+                is Edit<Set> -> {
+                    val updatedSet = mode.data.copy(
+                        weight = weight.toDouble(),
+                        reps = reps.toDouble(),
+                        rpe = rpe.toDouble()
+                    )
                     workoutRepo.updateSetForExercise(
                         exercise, updatedSet
                     )

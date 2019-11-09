@@ -8,7 +8,9 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 import me.memoryandthought.weighty.*
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.viewmodels.EditExerciseViewModel
@@ -57,16 +59,24 @@ class EditExerciseDialog : DialogFragment() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            builder.setTitle(viewModel.titleResource)
+            val dialog = builder.setTitle(viewModel.titleResource)
                 .setView(createExerciseView)
-                .setPositiveButton(viewModel.positiveButtonResource) { _, _ ->
-                    viewModel.save(nameText.text.toString())
-                    dialog?.dismiss()
+                .setPositiveButton(viewModel.positiveButtonResource, null)
+                .setNegativeButton(R.string.cancel, null)
+                .create()
+
+            // This hack is necessary rather than doing it in the listener for setPositiveButton
+            // because the dialog always dismisses when the handler completes but we actually need
+            // wait until the viewModel.save call is complete
+            dialog.setOnShowListener {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    viewModel.viewModelScope.launch {
+                        viewModel.save(nameText.text.toString())
+                        dialog?.dismiss()
+                    }
                 }
-                .setNegativeButton(R.string.cancel) { _, _ ->
-                    dialog?.cancel()
-                }
-            builder.create()
+            }
+            dialog
         } ?: throw IllegalStateException("Invalid activity")
     }
 

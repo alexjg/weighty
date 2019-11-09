@@ -2,12 +2,11 @@ package me.memoryandthought.weighty.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.memoryandthought.weighty.R
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.database.ExerciseRepository
-import java.time.Instant
-import java.util.UUID
 
 class EditExerciseViewModel(
     private val repo: ExerciseRepository,
@@ -40,19 +39,18 @@ class EditExerciseViewModel(
     }
 
 
-    fun save(name: String){
-        when (mode){
-            is Create, is CreateFromTemplate -> {
-                viewModelScope.launch {
+    suspend fun save(name: String){
+        withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
+            when (mode){
+                is Create, is CreateFromTemplate -> {
                     repo.addExercise(name)
                 }
-            }
-            is Edit -> {
-                val exercise = mode.data.copy(name=name)
-                viewModelScope.launch {
+                is Edit -> {
+                    val exercise = mode.data.copy(name=name)
                     repo.updateExercise(exercise)
                 }
             }
+
         }
     }
 
