@@ -1,14 +1,15 @@
 package me.memoryandthought.weighty.viewmodels
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.memoryandthought.weighty.database.WorkoutRepository
-import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.domain.Exercise
+import me.memoryandthought.weighty.domain.Set
 import java.text.DecimalFormat
 import java.time.Instant
 import java.util.UUID
@@ -16,30 +17,23 @@ import java.util.UUID
 class EditSetViewModel(
     private val workoutRepo: WorkoutRepository,
     private val exercise: Exercise,
-    private val mode: FormDialogMode<Set>): ViewModel() {
+    private val mode: FormDialogMode<Set>
+) : ViewModel() {
 
-    var rpe: String = ""
-        set(value) {
-            field = value
-            updateValidity()
-        }
-    var weight: String = ""
-        set(value) {
-            field = value
-            updateValidity()
-        }
-    var reps: String = ""
-        set(value) {
-            field = value
-            updateValidity()
-        }
-    private val validLiveData = MutableLiveData<Boolean>()
-    val isValid: LiveData<Boolean>
-        get() {
-            return validLiveData
-        }
+    private val _rpe = MutableLiveData("")
+    val rpe: LiveData<String> = _rpe
 
-    val title: String
+    private val _weight = MutableLiveData("")
+    val weight: LiveData<String> = _weight
+
+    private val _reps = MutableLiveData("")
+    val reps: LiveData<String> = _reps
+
+    private val _isValid = MediatorLiveData<Boolean>()
+    val isValid: LiveData<Boolean> = _isValid
+
+    val title:
+        String
         get() {
             return when (mode) {
                 is Create, is CreateFromTemplate -> "Add set"
@@ -58,32 +52,53 @@ class EditSetViewModel(
     init {
         when (mode) {
             is Edit<Set> -> {
-                rpe = mode.data.rpe.toString()
+                _rpe.value = mode.data.rpe.toString()
                 val df = DecimalFormat("#")
-                reps = df.format(mode.data.reps)
-                weight = mode.data.weight.toString()
+                _reps.value = df.format(mode.data.reps)
+                _weight.value = mode.data.weight.toString()
             }
             is CreateFromTemplate -> {
-               rpe = mode.template.rpe.toString()
-               val df = DecimalFormat("#")
-               reps = df.format(mode.template.reps)
-               weight = mode.template.weight.toString()
+                _rpe.value = mode.template.rpe.toString()
+                val df = DecimalFormat("#")
+                _reps.value = df.format(mode.template.reps)
+                _weight.value = mode.template.weight.toString()
+            }
+            Create -> {
+                _rpe.value = "8.0"
+                val df = DecimalFormat("#")
+                _reps.value = df.format(0)
+                _weight.value = "0"
             }
         }
-        validLiveData.postValue(checkValid())
+
+        _isValid.addSource(_rpe) { updateValidity() }
+        _isValid.addSource(_weight) { updateValidity() }
+        _isValid.addSource(_reps) { updateValidity() }
+    }
+
+    fun onRpeChange(rpe: String) {
+        _rpe.value = rpe
+    }
+
+    fun onWeightChange(weight: String) {
+        _weight.value = weight
+    }
+
+    fun onRepsChange(reps: String) {
+        _reps.value = reps
     }
 
     private fun updateValidity() {
-        validLiveData.value = checkValid()
+        _isValid.value = checkValid()
     }
 
     private fun checkValid(): Boolean {
-        return validateRpe() and validateReps() and validateWeight()
+        return validateRpe() && validateReps() && validateWeight()
     }
 
     private fun validateRpe(): Boolean {
-        rpe.toDoubleOrNull()?.let {
-            if ((it >= 0) and (it <= 10.0)){
+        _rpe.value?.toDoubleOrNull()?.let {
+            if ((it >= 0) && (it <= 10.0)) {
                 return true
             }
         }
@@ -91,8 +106,8 @@ class EditSetViewModel(
     }
 
     private fun validateWeight(): Boolean {
-        weight.toDoubleOrNull()?.let {
-            if (it >= 0){
+        _weight.value?.toDoubleOrNull()?.let {
+            if (it >= 0) {
                 return true
             }
         }
@@ -100,7 +115,7 @@ class EditSetViewModel(
     }
 
     private fun validateReps(): Boolean {
-        reps.toDoubleOrNull()?.let {
+        _reps.value?.toDoubleOrNull()?.let {
             if (it > 0.0) {
                 return true
             }
@@ -115,18 +130,18 @@ class EditSetViewModel(
                 is Create, is CreateFromTemplate -> {
                     val set = Set(
                         UUID.randomUUID(),
-                        weight.toDouble(),
-                        reps.toDouble(),
-                        rpe.toDouble(),
+                        _weight.value!!.toDouble(),
+                        _reps.value!!.toDouble(),
+                        _rpe.value!!.toDouble(),
                         Instant.now()
                     )
                     workoutRepo.addSetForExercise(exercise, set)
                 }
                 is Edit<Set> -> {
                     val updatedSet = mode.data.copy(
-                        weight = weight.toDouble(),
-                        reps = reps.toDouble(),
-                        rpe = rpe.toDouble()
+                        weight = _weight.value!!.toDouble(),
+                        reps = _reps.value!!.toDouble(),
+                        rpe = _rpe.value!!.toDouble()
                     )
                     workoutRepo.updateSetForExercise(
                         exercise, updatedSet

@@ -14,6 +14,7 @@
     <string name="exercise_menu_archive">Archive</string>
     <string name="add_set_title">Add set</string>
     <string name="add_set_positive">Add</string>
+    <string name="add_set">Add set</string>
     <string name="add_set_weight">Weight</string>
     <string name="add_set_rpe">RPE</string>
     <string name="add_set_reps">Reps</string>

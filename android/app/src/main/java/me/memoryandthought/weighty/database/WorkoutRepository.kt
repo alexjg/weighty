@@ -1,7 +1,7 @@
 package me.memoryandthought.weighty.database
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import me.memoryandthought.weighty.domain.Exercise
@@ -22,8 +22,7 @@ interface WorkoutRepository {
 class WorkoutRepositoryImpl(private val db: WeightyDatabase) : WorkoutRepository {
     override fun loadWorkoutsForExerciseId(exerciseId: UUID): LiveData<List<Workout>> {
         val localTimeZone = ZonedDateTime.now().zone
-        val setDtos = db.workoutDao().exerciseSetsForExercise(exerciseId)
-        return Transformations.map(setDtos) { setDtos ->
+        return db.workoutDao().exerciseSetsForExercise(exerciseId).map { setDtos ->
             setDtos.groupBy({ LocalDateTime.ofInstant(it.timestamp, localTimeZone).toLocalDate()}).entries.map{ (date, setDtos) ->
                 val sets = setDtos.map {
                     Set(it.setId, it.weight, it.reps, it.rpe, it.timestamp)

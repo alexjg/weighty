@@ -1,83 +1,70 @@
 package me.memoryandthought.weighty.fragments
+
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
-import com.google.android.material.textfield.TextInputEditText
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import me.memoryandthought.weighty.*
+import me.memoryandthought.weighty.InjectorUtils
+import me.memoryandthought.weighty.R
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.viewmodels.EditExerciseViewModel
 import me.memoryandthought.weighty.viewmodels.FormDialogMode
-import org.jetbrains.anko.*
-import java.lang.IllegalStateException
 
 class EditExerciseDialog : DialogFragment() {
     private lateinit var viewModel: EditExerciseViewModel
-
+    private val nameState = mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var mode: FormDialogMode<Exercise> = arguments?.getParcelable("mode")!!
-        val vmFactory = InjectorUtils.provideEditExerciseViewModelFactory(context!!, mode)
-        viewModel = ViewModelProviders.of(this, vmFactory)
-            .get(EditExerciseViewModel::class.java)
+        val mode: FormDialogMode<Exercise> = requireArguments().getParcelable("mode")!!
+        val vmFactory = InjectorUtils.provideEditExerciseViewModelFactory(requireContext(), mode)
+        viewModel = ViewModelProvider(this, vmFactory)[EditExerciseViewModel::class.java]
+        nameState.value = viewModel.name
     }
-
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        lateinit var nameText: TextInputEditText
-        return activity?.let {
-            val builder = AlertDialog.Builder(it)
-            val createExerciseView: View = AnkoContext.createReusable(
-                activity!!,
-                false
-            ).apply {
-                frameLayout {
-                    materialTextInputLayout {
-                        hint = context.getString(R.string.create_exercise_name_hint)
-                        nameText = materialTextInputEditText {
-                            setText(viewModel.name)
-                        }.lparams{
-                            width = matchParent
-                            height = wrapContent
-                            topMargin = dip(16)
-                            leftMargin = dip(16)
-                            rightMargin = dip(16)
-                            bottomMargin = dip(16)
-                        }
-                    }
-                }
-            }.view
-            createExerciseView.layoutParams = FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            val dialog = builder.setTitle(viewModel.titleResource)
-                .setView(createExerciseView)
-                .setPositiveButton(viewModel.positiveButtonResource, null)
-                .setNegativeButton(R.string.cancel, null)
-                .create()
-
-            // This hack is necessary rather than doing it in the listener for setPositiveButton
-            // because the dialog always dismisses when the handler completes but we actually need
-            // wait until the viewModel.save call is complete
-            dialog.setOnShowListener {
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    viewModel.viewModelScope.launch {
-                        viewModel.save(nameText.text.toString())
-                        dialog?.dismiss()
-                    }
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    OutlinedTextField(
+                        value = nameState.value,
+                        onValueChange = { nameState.value = it },
+                        label = { Text(stringResource(R.string.create_exercise_name_hint)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
-            dialog
-        } ?: throw IllegalStateException("Invalid activity")
-    }
+        }
 
+        val dialog = AlertDialog.Builder(requireActivity())
+            .setTitle(viewModel.titleResource)
+            .setView(composeView)
+            .setPositiveButton(viewModel.positiveButtonResource, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                lifecycleScope.launch {
+                    viewModel.save(nameState.value)
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        return dialog
+    }
 }

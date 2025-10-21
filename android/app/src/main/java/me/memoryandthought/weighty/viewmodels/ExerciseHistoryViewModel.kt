@@ -13,7 +13,7 @@ import java.util.*
 class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val exercise: Exercise): ViewModel() {
 
     fun historyItems(): LiveData<List<ExerciseHistoryItem>> {
-        return Transformations.map(repo.loadWorkoutsForExerciseId(exercise.id)) {workouts ->
+        return repo.loadWorkoutsForExerciseId(exercise.id).map { workouts ->
             val df= DecimalFormat("#.#")
             workouts.map { workout: Workout ->
                 val header = WorkoutHeader(workout.date.toString()) as ExerciseHistoryItem
@@ -32,7 +32,7 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val
     }
 
     fun mostRecentSet(): LiveData<Set?> {
-        return Transformations.map(repo.loadWorkoutsForExerciseId(exercise.id)) { workouts ->
+        return repo.loadWorkoutsForExerciseId(exercise.id).map { workouts ->
             workouts.firstOrNull()?.let {
                 it.sets.firstOrNull()
             }

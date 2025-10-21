@@ -1,6 +1,6 @@
 package me.memoryandthought.weighty.domain
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
