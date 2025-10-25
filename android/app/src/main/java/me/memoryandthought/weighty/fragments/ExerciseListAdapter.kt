@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,19 +34,28 @@ fun ExerciseList(
     exercises: List<Exercise>,
     onClickExercise: (Exercise) -> Unit,
     onClickEditExercise: (Exercise) -> Unit,
-    onClickArchiveExercise: (Exercise) -> Unit
+    onClickArchiveExercise: (Exercise) -> Unit,
+    onClickCreateExercise: () -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
-    ) {
-        items(exercises) { exercise ->
-            ExerciseListItem(
-                exercise = exercise,
-                onClickExercise = onClickExercise,
-                onClickEditExercise = onClickEditExercise,
-                onClickArchiveExercise = onClickArchiveExercise
-            )
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = onClickCreateExercise) {
+                Icon(Icons.Filled.Add, contentDescription = "Add exercise")
+            }
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(exercises) { exercise ->
+                ExerciseListItem(
+                    exercise = exercise,
+                    onClickExercise = onClickExercise,
+                    onClickEditExercise = onClickEditExercise,
+                    onClickArchiveExercise = onClickArchiveExercise
+                )
+            }
         }
     }
 }

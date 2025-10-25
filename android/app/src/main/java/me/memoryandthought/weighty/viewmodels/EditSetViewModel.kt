@@ -139,6 +139,7 @@ class EditSetViewModel(
                 }
                 is Edit<Set> -> {
                     val updatedSet = mode.data.copy(
+                        id = mode.data.id,
                         weight = _weight.value!!.toDouble(),
                         reps = _reps.value!!.toDouble(),
                         rpe = _rpe.value!!.toDouble()
