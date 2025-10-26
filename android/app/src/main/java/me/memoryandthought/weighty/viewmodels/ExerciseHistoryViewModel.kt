@@ -1,21 +1,27 @@
 package me.memoryandthought.weighty.viewmodels
 
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
-import me.memoryandthought.weighty.database.ExerciseRepository
 import me.memoryandthought.weighty.database.WorkoutRepository
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.domain.Workout
 import java.text.DecimalFormat
-import java.util.*
 
-class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val exercise: Exercise): ViewModel() {
+class ExerciseHistoryViewModel(private val repo: WorkoutRepository, private val exercise: Exercise): ViewModel() {
 
-    fun historyItems(): LiveData<List<ExerciseHistoryItem>> {
-        return repo.loadWorkoutsForExerciseId(exercise.id).map { workouts ->
-            val df= DecimalFormat("#.#")
-            workouts.map { workout: Workout ->
+    private val workouts: StateFlow<List<Workout>> =
+        repo.loadWorkoutsForExerciseId(viewModelScope, exercise.id)
+
+    val historyItems: StateFlow<List<ExerciseHistoryItem>> =
+        workouts.map { workoutList ->
+            val df = DecimalFormat("#.#")
+            workoutList.flatMap { workout ->
                 val header = WorkoutHeader(workout.date.toString()) as ExerciseHistoryItem
                 val setRows: List<ExerciseHistoryItem> = workout.sets.map {
                     SetRow(
@@ -23,21 +29,16 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val
                         it.weight.toString(),
                         df.format(it.reps),
                         it.rpe.toString()
-                    ) as ExerciseHistoryItem
+                    )
                 }
                 listOf(header) + setRows
-
-            }.flatten()
-        }
-    }
-
-    fun mostRecentSet(): LiveData<Set?> {
-        return repo.loadWorkoutsForExerciseId(exercise.id).map { workouts ->
-            workouts.firstOrNull()?.let {
-                it.sets.firstOrNull()
             }
-        }
-    }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val mostRecentSet: StateFlow<Set?> =
+        workouts.map { workoutList ->
+            workoutList.firstOrNull()?.sets?.firstOrNull()
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun archiveSet(set: Set) {
         viewModelScope.launch {
@@ -50,7 +51,6 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository,  private val
             repo.unarchiveSetForExercise(exercise, set)
         }
     }
-
 }
 
 sealed class ExerciseHistoryItem

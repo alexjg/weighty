@@ -45,7 +45,7 @@ fun ExerciseList(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(exercises) { exercise ->

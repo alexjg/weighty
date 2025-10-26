@@ -33,8 +33,8 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -107,8 +107,8 @@ fun ExerciseHistoryScreen(
     viewModel: ExerciseHistoryViewModel,
     exercise: Exercise
 ) {
-    val historyItems by viewModel.historyItems().observeAsState(initial = emptyList())
-    val mostRecentSet by viewModel.mostRecentSet().observeAsState()
+    val historyItems by viewModel.historyItems.collectAsState()
+    val mostRecentSet by viewModel.mostRecentSet.collectAsState()
     var dialogMode by remember { mutableStateOf<FormDialogMode<Set>?>(null) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }

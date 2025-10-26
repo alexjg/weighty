@@ -11,8 +11,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,10 +44,10 @@ fun EditSetDialog(
         )
     )
 
-    val weight by viewModel.weight.observeAsState("")
-    val reps by viewModel.reps.observeAsState("")
-    val rpe by viewModel.rpe.observeAsState("")
-    val isValid by viewModel.isValid.observeAsState(false)
+    val weight by viewModel.weight.collectAsState()
+    val reps by viewModel.reps.collectAsState()
+    val rpe by viewModel.rpe.collectAsState()
+    val isValid by viewModel.isValid.collectAsState()
     val scope = rememberCoroutineScope()
 
     Dialog(onDismissRequest = onDismiss) {
