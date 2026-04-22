@@ -3,10 +3,9 @@ package me.memoryandthought.weighty.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
-import me.memoryandthought.weighty.database.WorkoutRepository;
+import me.memoryandthought.weighty.database.WorkoutRepository
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.domain.Set
-import me.memoryandthought.weighty.fragments.EditSetDialog
 import kotlin.reflect.KClass
 
 class EditSetViewModelFactory(

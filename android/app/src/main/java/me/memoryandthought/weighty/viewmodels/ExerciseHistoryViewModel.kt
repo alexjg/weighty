@@ -2,21 +2,29 @@ package me.memoryandthought.weighty.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
+import me.memoryandthought.weighty.database.ExerciseRepository
 import me.memoryandthought.weighty.database.WorkoutRepository
 import me.memoryandthought.weighty.domain.Exercise
 import me.memoryandthought.weighty.domain.Set
 import me.memoryandthought.weighty.domain.Workout
 import java.text.DecimalFormat
+import java.util.UUID
 
-class ExerciseHistoryViewModel(private val repo: WorkoutRepository, private val exercise: Exercise): ViewModel() {
+class ExerciseHistoryViewModel(
+    exerciseRepo: ExerciseRepository,
+    private val workoutRepo: WorkoutRepository,
+    private val exerciseId: UUID
+) : ViewModel() {
+
+    val exercise: StateFlow<Exercise?> = exerciseRepo.loadExercise(viewModelScope, exerciseId)
 
     private val workouts: StateFlow<List<Workout>> =
-        repo.loadWorkoutsForExerciseId(viewModelScope, exercise.id)
+        workoutRepo.loadWorkoutsForExerciseId(viewModelScope, exerciseId)
 
     val historyItems: StateFlow<List<ExerciseHistoryItem>> =
         workouts.map { workoutList ->
@@ -40,15 +48,15 @@ class ExerciseHistoryViewModel(private val repo: WorkoutRepository, private val 
             workoutList.firstOrNull()?.sets?.firstOrNull()
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    fun archiveSet(set: Set) {
+    fun archiveSet(exercise: Exercise, set: Set) {
         viewModelScope.launch {
-            repo.archiveSetForExercise(exercise, set)
+            workoutRepo.archiveSetForExercise(exercise, set)
         }
     }
 
-    fun unarchiveSet(set: Set) {
+    fun unarchiveSet(exercise: Exercise, set: Set) {
         viewModelScope.launch {
-            repo.unarchiveSetForExercise(exercise, set)
+            workoutRepo.unarchiveSetForExercise(exercise, set)
         }
     }
 }

@@ -1,6 +1,7 @@
 package me.memoryandthought.weighty
 
 import android.content.Context
+import java.util.UUID
 import me.memoryandthought.weighty.automerge.WeightyRepo
 import me.memoryandthought.weighty.database.ExerciseRepositoryImpl
 import me.memoryandthought.weighty.database.WorkoutRepositoryImpl
@@ -34,9 +35,10 @@ object InjectorUtils {
         return EditExerciseViewModelFactory(repository, mode)
     }
 
-    fun provideExerciseHistoryViewModelFactory(context: Context, exercise: Exercise): ExerciseHistoryViewModelFactory {
+    fun provideExerciseHistoryViewModelFactory(context: Context, exerciseId: UUID): ExerciseHistoryViewModelFactory {
+        val exerciseRepo = ExerciseRepositoryImpl(requireDocHandle())
         val workoutRepo = WorkoutRepositoryImpl(requireDocHandle())
-        return ExerciseHistoryViewModelFactory(workoutRepo, exercise)
+        return ExerciseHistoryViewModelFactory(exerciseRepo, workoutRepo, exerciseId)
     }
 
     fun provideEditSetViewModelFactory(context: Context, exercise: Exercise, mode: FormDialogMode<Set>): EditSetViewModelFactory {

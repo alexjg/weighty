@@ -1,4 +1,4 @@
-package me.memoryandthought.weighty.fragments
+package me.memoryandthought.weighty.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

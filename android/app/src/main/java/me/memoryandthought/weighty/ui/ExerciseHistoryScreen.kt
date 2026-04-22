@@ -1,9 +1,5 @@
-package me.memoryandthought.weighty.fragments
+package me.memoryandthought.weighty.ui
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,12 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -31,6 +29,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,13 +42,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.navArgs
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.memoryandthought.weighty.InjectorUtils
 import me.memoryandthought.weighty.R
@@ -61,51 +60,42 @@ import me.memoryandthought.weighty.viewmodels.ExerciseHistoryViewModel
 import me.memoryandthought.weighty.viewmodels.FormDialogMode
 import me.memoryandthought.weighty.viewmodels.SetRow
 import me.memoryandthought.weighty.viewmodels.WorkoutHeader
+import java.util.UUID
 
-class ExerciseHistoryFragment : Fragment() {
-
-    private lateinit var viewModel: ExerciseHistoryViewModel
-    private lateinit var exercise: Exercise
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val args: ExerciseHistoryFragmentArgs by navArgs()
-        exercise = args.exercise
-        val vmFactory = InjectorUtils.provideExerciseHistoryViewModelFactory(
-            requireContext(),
-            args.exercise
+@Composable
+fun ExerciseHistoryScreen(
+    exerciseId: UUID,
+    onBack: () -> Unit
+) {
+    val viewModel: ExerciseHistoryViewModel = viewModel(
+        factory = InjectorUtils.provideExerciseHistoryViewModelFactory(
+            context = LocalContext.current,
+            exerciseId = exerciseId
         )
-        viewModel = ViewModelProvider(this, vmFactory)[ExerciseHistoryViewModel::class.java]
-    }
+    )
 
-    override fun onResume() {
-        super.onResume()
-        activity?.title = exercise.name
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setContent {
-                MaterialTheme {
-                    ExerciseHistoryScreen(
-                        viewModel = viewModel,
-                        exercise = exercise
-                    )
-                }
-            }
+    val exercise by viewModel.exercise.collectAsState()
+    val currentExercise = exercise
+    if (currentExercise == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = "Loading…")
         }
+        return
     }
+
+    ExerciseHistoryScreenContent(
+        viewModel = viewModel,
+        exercise = currentExercise,
+        onBack = onBack
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExerciseHistoryScreen(
+private fun ExerciseHistoryScreenContent(
     viewModel: ExerciseHistoryViewModel,
-    exercise: Exercise
+    exercise: Exercise,
+    onBack: () -> Unit
 ) {
     val historyItems by viewModel.historyItems.collectAsState()
     val mostRecentSet by viewModel.mostRecentSet.collectAsState()
@@ -118,6 +108,24 @@ fun ExerciseHistoryScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { Text(exercise.name) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(id = R.color.colorPrimary),
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 val mode = mostRecentSet?.let { CreateFromTemplate(it) } ?: Create
@@ -148,14 +156,14 @@ fun ExerciseHistoryScreen(
                         val dismissState = rememberSwipeToDismissBoxState(
                             confirmValueChange = {
                                 if (it == SwipeToDismissBoxValue.EndToStart) {
-                                    viewModel.archiveSet(currentSet)
+                                    viewModel.archiveSet(exercise, currentSet)
                                     scope.launch {
                                         val snackbarResult = snackbarHostState.showSnackbar(
                                             message = setArchivedString,
                                             actionLabel = undoString
                                         )
                                         if (snackbarResult == SnackbarResult.ActionPerformed) {
-                                            viewModel.unarchiveSet(currentSet)
+                                            viewModel.unarchiveSet(exercise, currentSet)
                                         }
                                     }
                                     return@rememberSwipeToDismissBoxState true
@@ -197,6 +205,7 @@ fun ExerciseHistoryScreen(
             }
         }
     }
+
     dialogMode?.let { mode ->
         EditSetDialog(
             exercise = exercise,
@@ -207,7 +216,7 @@ fun ExerciseHistoryScreen(
 }
 
 @Composable
-fun WorkoutHeaderComposable(header: WorkoutHeader) {
+private fun WorkoutHeaderComposable(header: WorkoutHeader) {
     Text(
         text = header.date,
         style = MaterialTheme.typography.titleSmall,
@@ -218,7 +227,7 @@ fun WorkoutHeaderComposable(header: WorkoutHeader) {
 }
 
 @Composable
-fun SetRowComposable(row: SetRow, onClickSet: (Set) -> Unit) {
+private fun SetRowComposable(row: SetRow, onClickSet: (Set) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,7 +259,7 @@ fun SetRowComposable(row: SetRow, onClickSet: (Set) -> Unit) {
 }
 
 @Composable
-fun SetRowDataItemComposable(header: String, value: String, modifier: Modifier = Modifier) {
+private fun SetRowDataItemComposable(header: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = header, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Text(text = value, style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)

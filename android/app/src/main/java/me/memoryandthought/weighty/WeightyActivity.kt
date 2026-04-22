@@ -1,20 +1,18 @@
 package me.memoryandthought.weighty
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import me.memoryandthought.weighty.ui.WeightyApp
 
-/**
- * List of exercises
- */
-class WeightyActivity : AppCompatActivity() {
+class WeightyActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        setContentView(R.layout.activity_weighty)
-
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+        enableEdgeToEdge()
+        setContent {
+            WeightyApp()
+        }
     }
-
 }
