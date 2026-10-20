@@ -27,6 +27,9 @@ android {
             applicationIdSuffix ".debug"
         }
         release {
+            // Sign release builds with the built-in debug keystore so they can be
+            // installed locally via `./gradlew :app:installRelease`.
+            signingConfig signingConfigs.getByName("debug")
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
